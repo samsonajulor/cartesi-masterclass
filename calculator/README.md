@@ -133,4 +133,14 @@ It will evaluate the mathematical expression `3 + 5 * 10` and add the outcome `5
 43272d70-validator-1  | INFO:__main__:Adding notice with payload: '53'
 ```
 
+## UPDATE
+I upgraded the calculator to calculate pythagoras theorem.
 
+You can pass the following json string:
+
+```json
+{ "side_a": "2", "side_b": "4" }
+```
+
+![sent request through the terminal](images/sent_request.png)
+![log request](images/request_log.png)

@@ -14,7 +14,8 @@ from os import environ
 import traceback
 import logging
 import requests
-from py_expression_eval import Parser
+import json
+from cmath import sqrt
 
 logging.basicConfig(level="INFO")
 logger = logging.getLogger(__name__)
@@ -34,6 +35,20 @@ def str2hex(str):
     """
     return "0x" + str.encode("utf-8").hex()
 
+def validate_pythagorean_payload(payload):
+    required_fields = ["side_a", "side_b"]
+
+    # Check if all required fields are present in the payload
+    if not all(field in payload for field in required_fields):
+        raise ValueError("Missing required fields in Pythagorean payload")
+
+    # Check if the values are valid numbers
+    for field in required_fields:
+        try:
+            float(payload[field])
+        except ValueError:
+            raise ValueError(f"Invalid value for '{field}' in Pythagorean payload")
+
 def handle_advance(data):
     logger.info(f"Received advance request data {data}")
 
@@ -41,14 +56,22 @@ def handle_advance(data):
     try:
         input = hex2str(data["payload"])
         logger.info(f"Received input: {input}")
+        
+        payload = json.loads(input)
+        logger.info(f"Payload unstring: {payload}")
 
-        # Evaluates expression
-        parser = Parser()
-        output = parser.parse(input).evaluate({})
+        validate_pythagorean_payload(payload)
 
-        # Emits notice with result of calculation
-        logger.info(f"Adding notice with payload: '{output}'")
-        response = requests.post(rollup_server + "/notice", json={"payload": str2hex(str(output))})
+        side_a = float(payload["side_a"])
+        side_b = float(payload["side_b"])
+
+        hypotenuse = sqrt(side_a**2 + side_b**2)
+
+        logger.info(f"This is the hypotenuse: {hypotenuse}")
+
+        # Emits notice with the result
+        logger.info(f"Adding notice with payload: '{hypotenuse}'")
+        response = requests.post(rollup_server + "/notice", json={"payload": str2hex(str(hypotenuse))})
         logger.info(f"Received notice status {response.status_code} body {response.content}")
 
     except Exception as e:
